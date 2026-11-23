@@ -1,0 +1,45 @@
+name: 自动更新铜梁龙数据
+
+# 每 6 小时从 FotMob 拉一次最新赛程、比分和积分榜；
+# 有变化就自动提交，GitHub Pages 跟着重建。
+# 也可以在 Actions 页面手动点 "Run workflow" 立刻跑一次。
+
+on:
+  schedule:
+    - cron: '20 1,7,13,19 * * *'   # UTC；北京时间 09:20 / 15:20 / 21:20 / 03:20
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tll-update
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 抓赛程 / 比分 / 积分榜
+        run: node build-data.mjs
+
+      - name: 版本号自增（让老客户端知道该更新）
+        run: node bump-version.mjs
+
+      - name: 提交改动
+        run: |
+          git config user.name  "tll-bot"
+          git config user.email "tll-bot@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "没有变化，跳过提交"
+          else
+            git commit -m "chore: 自动更新数据 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+            git push
+          fi
