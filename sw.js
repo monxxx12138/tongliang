@@ -1,6 +1,6 @@
 /* 铜梁龙周报 · Service Worker
    外壳 + 数据离线可用；data.json 走「网络优先」，服务器一更新就能拿到。 */
-const VERSION = 'tll-v18';
+const VERSION = 'tll-v19';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './data.json',
   './icon-192.png', './icon-512.png', './icon-180.png', './icon-32.png',
